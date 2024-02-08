@@ -12,10 +12,13 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   '/': htmlHandler.getIndexPage,
   '/style.css': cssHandler.getIndexStyle,
-  '/success': jsonHandler.success,
-  '/badRequest': jsonHandler.badRequest,
-
-  notFound: jsonHandler.notFound,
+  '/success': responseHandler.success,
+  '/badRequest': responseHandler.badRequest,
+  '/unauthorized': responseHandler.unauthorizedRequest,
+  '/forbidden': responseHandler.forbidden,
+  '/internal': responseHandler.internal,
+  '/notImplemented': responseHandler.notImplemented,
+  notFound: responseHandler.notFound,
 };
 
 // Server functions
@@ -24,10 +27,13 @@ const onRequest = (request, response) => {
   const parsedURL = url.parse(request.url);
   const params = query.parse(parsedURL.query);
 
+  // Get accepted header types
+  const acceptedTypes = request.headers.accept.split(',');
+
   if (urlStruct[parsedURL.pathname]) {
-    urlStruct[parsedURL.pathname](request, response, params);
+    urlStruct[parsedURL.pathname](request, response, acceptedTypes, params);
   } else {
-    urlStruct.notFound(request, response, params);
+    urlStruct.notFound(request, response, acceptedTypes);
   }
 };
 
